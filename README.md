@@ -1,237 +1,104 @@
+# Incident-Response-Email-Phishing-Urgent-Account-Suspended
+ 
+🌐 **Business Email Compromise (BEC) Woes? Meet Your New Best Friend: Sublime Security!** 🛡️💌  
 
+I’ve been deeply involved in addressing **Business Email Compromise (BEC)** 🔓📧 and needed a solution that’s **easy to deploy** 🚀 yet powerful enough to **customize and build detections** 🔍. Enter **Sublime Security**—a tool I’ve come to love (not sponsored, but genuinely impressed)! 💖  
 
-
-
----
-
-# 🚨 Incident Response: Brute Force Attempt Detection
-
-![image](https://github.com/user-attachments/assets/078932c1-3e7e-48cf-a0c1-1cd787336ce6)
-
----
-
-## Scenario Context
-As a security analyst for a large financial services organization relying heavily on Microsoft Azure services, I observed multiple failed login attempts, particularly targeting privileged accounts during off-hours. This raises concerns about a brute-force attack or a credential-stuffing campaign. 
-
-My goal is to investigate, detect, and mitigate this potential threat in compliance with **NIST 800-61** guidelines.
+### **What Is Sublime Security? 🤔**  
+It’s an **email security platform** designed for **transparency** 🪟. Unlike black-box solutions, it shows you *exactly* how it prevents and detects malicious emails 📬🛑. This means you can fully **customize it to fit your needs** ✨.  
 
 ---
 
-## 🔍 **Objective: Find Brute Force and Create Sentinel Scheduled Query Rule**
-Implement a **Sentinel Scheduled Query Rule** using KQL in Log Analytics to detect when the same remote IP address fails to log in to the same Azure VM 10+ times within a 5-hour period.
+### **Key Features You’ll Love ❤️:**  
+1. **Inbound Email Protection** 🛡️: Block **advanced attacks** like BEC. 💥  
+2. **Attack Surface Reduction** 🧹: Create policies to block risky attachments (e.g., .zip, .pdf). 📂🚫  
+3. **Custom Detections & Policies** 🛠️: Tailor rules to prevent threats based on specific characteristics.  
 
 ---
 
-## 🛠️ **Platforms and Tools**
-- **Microsoft Sentinel**
-- **Microsoft Defender for Endpoint**
-- **Kusto Query Language (KQL)**
-- **Windows 10 Virtual Machines (Microsoft Azure)**
+### **A Cool Example 🎯:**  
+Imagine you’re an **incident responder** 🕵️‍♂️. Post-compromise, you discover an email with a **malicious attachment** that caused a breach. 😱 After recovery, you write a **detection rule** in Sublime Security for similar threats.  
+
+Fast forward—someone tries sending a **malicious invoice** 📄👾, but **BOOM** 💥—it’s blocked! 🙌 You just saved your organization from another potential disaster! 🏆  
+
+---
+![Screenshot 2025-01-21 120949](https://github.com/user-attachments/assets/a06162e8-9843-4ab9-8a5c-bff36dccccd3)
+
+Attack Score Verdict 🔍
+
+Malicious
+
+Attack Score Signals:
+
+Authoritative Display Name: The sender has a display name resembling Human Resources, which is commonly used in scams.
+
+Suspicious Sender: The sender domain’s TLD ends in ".jp," often abused to conduct attacks.
+
+Suspicious Subject: The subject attempts to engage using a sense of urgency, a common tactic used in attacks.
 
 ---
 
-## **Incident Response Phases**
-### 1️⃣ Preparation
-1. **Policies and Procedures:**
-   - Establish protocols for handling brute-force attempts, account lockouts, and account recovery.
-   - Include predefined actions for notifications, account lockdowns, and reporting suspicious activity.
+![Screenshot 2025-01-21 133912](https://github.com/user-attachments/assets/c20483f2-e46b-4085-a69a-cb022e3e4fc9)
 
-2. **Access Control and Logging:**
-   - Enable logging of all login attempts across Azure AD.
-   - Integrate with **Microsoft Defender for Identity** and **Azure Sentinel** for automated detection and alerts.
+Message Group Details:
 
-3. **Training:**
-   - Train the security team to handle credential-based attacks, including brute force and credential stuffing.
+Subject: Urgent: Account suspended
 
-4. **Communication Plan:**
-   - Create an escalation plan for IT support and privileged account holders during incidents.
+Sender: info@nessstech.co.jp
+
+Recipient: rachael.tyrell@tyrellcorp.com
+
+Attachment: 1 file (image.png)
 
 ---
 
-### 2️⃣ Detection & Analysis
-#### Observations:
-```kql
-DeviceFileEvents
-| top 20 by Timestamp desc
-```
-```kql
-DeviceNetworkEvents
-| top 20 by Timestamp desc
-```
-```kql
-DeviceProcessEvents
-| top 20 by Timestamp desc
-```
-```kql
-DeviceLogonEvents
-| where TimeGenerated >= ago(5h)
-| where ActionType == "LogonFailed"
-| summarize NumberOfFailures = count() by RemoteIP, ActionType, DeviceName
-| where NumberOfFailures >= 10
-```
-![Screenshot 2025-01-13 182228](https://github.com/user-attachments/assets/d69ebc60-597d-4c13-8ef2-20b19b7a3778)
+![Screenshot 2025-01-21 133827](https://github.com/user-attachments/assets/2a2054bf-a2f8-4e92-b258-3ae6970fafc2)
+
+Matched Detection Rules (3):
+
+1. Corporate Services Impersonation Phishing
+
+Rule Description: Detects phishing attempts impersonating corporate services like HR or helpdesk, using specific language and suspicious links.
+
+2. Display Name Impersonation Using Recipient SLD
+
+Rule Description: Identifies when the recipient domain’s SLD is used in the sender’s display name to impersonate the organization.
+
+![Screenshot 2025-01-21 133839](https://github.com/user-attachments/assets/1ade8fca-f5e8-447d-b9ca-28a9f14adb8e)
+
+3. Impersonation Using Recipient Domain (Untrusted Sender)
+
+Rule Description: Flags emails where the recipient's domain is used in the sender's display name, impersonating the organization.
+
+---
+Message Detail Sample
+![Screenshot 2025-01-21 134128](https://github.com/user-attachments/assets/6ddd9e37-77b0-44d3-b314-dc3ff9bd9ec9)
+
+Message Content
+![Screenshot 2025-01-21 134140](https://github.com/user-attachments/assets/f93d7492-9882-40c9-82f1-40af759bfc84)
+
+The Email
+
+![Screenshot 2025-01-21 134202](https://github.com/user-attachments/assets/5d5ee75e-4e03-4357-b10c-f98871b25f0a)
 
 
-- **Three Azure VMs** were targeted by brute force attempts from **three public IPs**:
-  
-  | **Remote IP**       | **Failed Attempts** | **Target Machine**    |
-  |---------------------|---------------------|-----------------------|
-  | `87.120.127.241`    | 116                 | `linux-agent-scan-sam`    |
-  | `194.0.234.44`     | 100                 | `bennyvirtual`    |
-  | `10.0.0.8`    | 22, 20                 | `windows-server,ryan-final-lab `     |
-
-![Screenshot 2025-01-06 181511](https://github.com/user-attachments/assets/3134d542-b44d-4036-b2ce-1827bc7dda88)
-
-- KQL Query to detect failed logins:  
-  ```kql
-  DeviceLogonEvents
-  | where RemoteIP in ("87.120.127.241", "194.0.234.44", "10.0.0.8" )
-  | where ActionType != "LogonFailed"
-  ```
-
-  **Result:** No successful logins from these IPs were detected.
-
-#### Analysis Steps:
-1. **Review Patterns:**
-   - Investigated failed login thresholds in Azure AD logs.
-   - Identified off-hours timing and suspicious IP geolocations.
-
-2. **Document Findings:**
-   - Retained logs detailing the frequency, origin, and targets of failed attempts.
-
-3. **Prioritize:**
-   - **High Priority:** Privileged accounts targeted during off-hours.
-   - **Low Priority:** Isolated, user-specific failed attempts.
+### **Ease of Use 🧩:**  
+Sublime Security integrates seamlessly with **Gmail** and **Microsoft 365** 📧🔗 using APIs, with **no need to modify MX records**. It’s available as:  
+- **On-Premises** 🖥️  
+- **Managed Cloud** ☁️  
 
 ---
 
-### 3️⃣ Containment
-#### Immediate Actions:
-1. **Device Isolation:**
-   - Isolated affected devices using **Microsoft Defender for Endpoint**.
-
-2. **Network Security Group (NSG) Update:**
-   - Restricted RDP access to authorized IPs only.
-   - Blocked all external IPs linked to failed login attempts.
-
-3. **Anti-Malware Scans:**
-   - Performed scans on affected devices for potential compromise.
+### **How to Get Started 🛠️:**  
+1. Head to their site and click **Deploy Now for Free**. 🖱️  
+2. Create an account via **Google, Microsoft, or email**. ✉️  
+3. Choose a message source (**Google Workspace, Microsoft 365, Gmail via IMAP**, etc.) or explore **Demo Mode** to test with fake data. 🎮  
 
 ---
 
-### 4️⃣ Eradication & Recovery
-1. **Password Reset:**
-   - Reset passwords for targeted accounts.
-   - Enforced strong password policies for privileged accounts.
-
-2. **MFA Enforcement:**
-   - Enabled multi-factor authentication for all high-value accounts.
-
-3. **Geo-blocking:**
-   - Blocked login attempts from high-risk geolocations.
-
----
-
-### 5️⃣ Post-Incident Activity
-1. **Lessons Learned:**
-   - Was detection quick and effective?
-   - Were privileged accounts adequately protected?
-
-2. **System Improvements:**
-   - Adjusted login thresholds for quicker detection.
-   - Expanded employee training on password security.
-
-3. **Documentation:**
-   - Recorded all findings, actions taken, and future recommendations.
----
-
-### **Step 1: Create-Alert-Rule** 
-how to create a alert rule in Microsoft Sentinel , go to Microsoft Sentinel, click on your group, click on configuration, click on Analytics, click create with the + beside it , click scheduled query rule
-After clicking **"Scheduled query rule"**, you’ll see the **Analytics rule details** tab. Fill in the following fields:
-
-1. **Name**:  
-   - Enter a name for your rule, e.g., **"🔥 Brute Force Attack Detection 🔐"**.
-
-2. **Description**:  
-   - Add a brief description of what the rule does, e.g.,  
-     *"🔍 This rule detects potential brute-force login attempts based on failed sign-ins exceeding a defined threshold."*
-
-3. **Severity**:  
-   - Choose a severity level:
-     - **Low** 🟢
-     - **Medium** 🟡
-     - **High** 🔴 (Recommended for brute force detection)
-
-4. **Tactics**:  
-   - Select the **MITRE ATT&CK Tactics** related to brute force:
-     - **🎯 Initial Access**
-     - **🔑 Credential Access**
-      
-![Screenshot 2025-01-14 103734](https://github.com/user-attachments/assets/f6558c4d-585b-4e63-b787-1cc071cc0ad0)
-
-5. **Rule type**:  
-   - Select **Scheduled 🕒**.
-
-6. **Set rule frequency**:  
-   - Choose how often the query should run (e.g., **Every 5 minutes ⏱️**).
-
-7. **Set query results to look back**:  
-   - Define the time window for the query (e.g., **Last 1 hour ⏳**).
-
----
-
-### **Step 2: Add the KQL Query**  
-In the **Set rule query** step, paste your KQL query to detect brute-force attempts:  
-
-```kql
-DeviceLogonEvents
-| where TimeGenerated >= ago(5h)
-| where ActionType == "LogonFailed"
-| summarize NumberOfFailures = count() by RemoteIP, ActionType, DeviceName
-| where NumberOfFailures >= 10s
-```
-![Screenshot 2025-01-14 111832](https://github.com/user-attachments/assets/b1164c0f-6022-444e-a409-43c1d4e9a579)
-
-- 🛠️ This query filters **sign-in logs** for failed login attempts and identifies unusual patterns.  
-- 💡 Adjust thresholds based on your environment (e.g., `> 5 failed attempts`).
-
----
-
-### **Step 3: Define Incident Settings**  
-1. **Create incidents based on alert results**: Ensure this is selected ✅.  
-2. **Group alerts into incidents**:  
-   - Choose **"🧩 Grouped into a single incident if they share the same entities"** to avoid duplicates.
-
----
-
-### **Step 4: Add Actions and Automation**  
-1. Configure **actions** to trigger when the rule is activated:  
-   - Add a **Playbook 🛠️** for automated responses, such as:  
-     - Blocking an IP 🚫.  
-     - Sending an email to your security team 📧.  
-     - Triggering a Teams or Slack notification 💬.  
-
-2. Example Playbook: A Logic App that sends an **email notification 📤** to the SOC.
-
----
-
-### **Step 5: Review and Enable**  
-1. **Review everything** to ensure it’s correct:
-   - Name 🔖, description 📝, KQL query 📊, frequency ⏱️, and action settings ⚙️.  
-
-2. Click **"Create"** to enable the rule 🎉.  
-
----
-
-### **Step 6: Validate Your Rule**  
-1. Test the rule by simulating a brute-force attack or using sample logs:
-   - Run a script that triggers **failed login attempts** (simulated safely) 🧑‍💻.
-   - Replay historical logs using KQL 📜.
-
-2. Verify that alerts are generated 🚨 and incidents are grouped as expected ✅.  
----
-## 🚫 **Outcome**
-- **Attack Status:** Brute force attempts **unsuccessful**.  
-- **Recommendations:** Lockdown NSG rules for all VMs and enforce MFA on privileged accounts.
-
-🎉 **Status:** Incident resolved. No further action required.
+### **Super Useful Features 🚀:**  
+- **Detailed Message Analysis** 🧐: Check if users opened, replied, or forwarded emails.  
+- **Attack Scoring** 🧮: Learn why an email is flagged as malicious.  
+- **Matched Detection Rules** 🗂️: See the exact rules triggered and modify as needed.  
+- **Hunt Feature** 🔍: Search your organization’s emails for specific keywords or indicators.  
+- **API Integration** 🤝: Automate actions with SOAR solutions!  
